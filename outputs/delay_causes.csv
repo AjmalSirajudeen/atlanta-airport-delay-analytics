@@ -1,0 +1,6 @@
+cause,minutes,class
+CarrierDelay,9430.0,airline-controllable
+LateAircraftDelay,8231.0,airline-controllable
+NASDelay,5031.0,largely-uncontrollable
+WeatherDelay,1679.0,largely-uncontrollable
+SecurityDelay,7.0,largely-uncontrollable

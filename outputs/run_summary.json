@@ -1,0 +1,73 @@
+{
+  "source": "data/sample/atl_flights_sample.csv",
+  "n_operated_flights": 2967,
+  "n_airlines": 11,
+  "mean_dep_delay": 6.826761038085609,
+  "mean_arr_delay": 0.9046174587125042,
+  "pct_dep_delayed_15": 14.661274014155712,
+  "pct_arr_delayed_15": 14.829794405123021,
+  "anova": [
+    {
+      "factor": "airline_type",
+      "value": "DepDelay",
+      "n_groups": 3,
+      "n": 2967,
+      "F": 4.233959293495494,
+      "pvalue": 0.01458265105014431,
+      "group_means": {
+        "Major": 5.563710499490316,
+        "Medium": 8.412946428571429,
+        "Regional": 10.0
+      }
+    },
+    {
+      "factor": "Month",
+      "value": "DepDelay",
+      "n_groups": 1,
+      "pvalue": null,
+      "F": null
+    },
+    {
+      "factor": "airline_type",
+      "value": "ArrDelay",
+      "n_groups": 3,
+      "n": 2967,
+      "F": 20.717728313581617,
+      "pvalue": 1.1606897161778644e-09,
+      "group_means": {
+        "Major": -1.901630988786952,
+        "Medium": 2.939732142857143,
+        "Regional": 9.152603231597846
+      }
+    },
+    {
+      "factor": "Month",
+      "value": "ArrDelay",
+      "n_groups": 1,
+      "pvalue": null,
+      "F": null
+    },
+    {
+      "factor": "distance_group",
+      "value": "ArrDelay",
+      "n_groups": 3,
+      "n": 2967,
+      "F": 4.365901159500807,
+      "pvalue": 0.012784997144085628,
+      "group_means": {
+        "0-999": 1.5594431903686983,
+        "1000-1999": -5.5425101214574894,
+        "2000-2999": -1.4838709677419355
+      }
+    }
+  ],
+  "cost_illustration": {
+    "cities_over_threshold": 20,
+    "flights_in_those_cities": 136,
+    "passenger_minutes": 283761.0,
+    "wage_loss_usd": 104045.70000000001,
+    "wage_per_hour": 22.0,
+    "passengers_per_flight": 123
+  },
+  "note": "If the source is the bundled sample, this is a 3,000-flight January 2015 ATL subset, not the original ~350,000-flight year-long file."
+}
