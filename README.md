@@ -79,6 +79,14 @@ These points come from the Cornell report, not from the bundled sample:
 - Some smaller origin cities had high average delays. The paper's wage illustration on cities over 15 minutes was about $19.8 million using $22/hour and 123 passengers per flight.
 - Recommendations: raise smaller-city operations, support regional carriers, smooth holiday operations, and watch airfield capacity.
 
+![Delay types and the 15-minute rule from the Cornell report](outputs/figures/original_delay_types.png)
+
+![Airlines the report placed above a 15-minute average](outputs/figures/original_airlines_over_15.png)
+
+![Seasonal pattern described in the report (not minute values)](outputs/figures/original_seasonal_pattern.png)
+
+![Wage-loss illustration from the report](outputs/figures/original_cost_illustration.png)
+
 ### This Python run (January 2015 sample, 2,967 operated flights)
 
 - Mean departure delay **6.83** minutes; mean arrival delay **0.90** minutes. Same direction as the paper: departures look worse than arrivals.
@@ -90,15 +98,19 @@ These points come from the Cornell report, not from the bundled sample:
 
 Numbers live in `outputs/run_summary.json`. If you download the full 2015 ATL file, report those results separately from the paper.
 
-## Charts
+## Charts from this repo (January 2015 sample)
 
-`scripts/run_pipeline.py` writes five plots to `outputs/figures/`:
+These plots are from `scripts/run_pipeline.py` on the 3,000-flight sample. They are not the original year-long JMP charts.
 
-1. Arrival delay histogram (positive delays, 15-minute line)
-2. Average arrival delay by month
-3. Average arrival delay by airline
-4. Arrival delay rate by airline
-5. Total BTS delay minutes by cause
+![Arrival delay histogram](outputs/figures/arrival_delay_hist.png)
+
+![Average arrival delay by month](outputs/figures/arrival_delay_by_month.png)
+
+![Average arrival delay by airline](outputs/figures/arrival_delay_by_airline.png)
+
+![Arrival delay rate by airline](outputs/figures/arrival_delay_rate_by_airline.png)
+
+![Delay minutes by BTS cause](outputs/figures/delay_causes.png)
 
 ## Layout
 
