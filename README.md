@@ -64,11 +64,9 @@ flowchart LR
     F --> G
 ```
 
-## Key findings
+## Original Cornell Study
 
-### Original study (2015, full ATL year)
-
-These points come from the Cornell report, not from the bundled sample:
+These findings are from the 2015 full-year ATL report (about 350,000 flights). They are **not** from the 3,000-flight sample in this repo.
 
 - Mean departure delay was higher than mean arrival delay. The interpretation was that some departure loss is recovered in the air.
 - Positive delays were described as log-normal after zeros were dropped (zeros were most of the data).
@@ -81,13 +79,9 @@ These points come from the Cornell report, not from the bundled sample:
 
 ![Delay types and the 15-minute rule from the Cornell report](outputs/figures/original_delay_types.png)
 
-![Airlines the report placed above a 15-minute average](outputs/figures/original_airlines_over_15.png)
+## Current Python Reimplementation
 
-![Seasonal pattern described in the report (not minute values)](outputs/figures/original_seasonal_pattern.png)
-
-![Wage-loss illustration from the report](outputs/figures/original_cost_illustration.png)
-
-### This Python run (January 2015 sample, 2,967 operated flights)
+January 2015 sample, 2,967 operated flights (`data/sample/atl_flights_sample.csv`). These numbers are **not** the year-long study results.
 
 - Mean departure delay **6.83** minutes; mean arrival delay **0.90** minutes. Same direction as the paper: departures look worse than arrivals.
 - **14.8%** of sample arrivals were 15 or more minutes late.
@@ -98,19 +92,9 @@ These points come from the Cornell report, not from the bundled sample:
 
 Numbers live in `outputs/run_summary.json`. If you download the full 2015 ATL file, report those results separately from the paper.
 
-## Charts from this repo (January 2015 sample)
-
-These plots are from `scripts/run_pipeline.py` on the 3,000-flight sample. They are not the original year-long JMP charts.
-
 ![Arrival delay histogram](outputs/figures/arrival_delay_hist.png)
 
-![Average arrival delay by month](outputs/figures/arrival_delay_by_month.png)
-
 ![Average arrival delay by airline](outputs/figures/arrival_delay_by_airline.png)
-
-![Arrival delay rate by airline](outputs/figures/arrival_delay_rate_by_airline.png)
-
-![Delay minutes by BTS cause](outputs/figures/delay_causes.png)
 
 ## Layout
 
