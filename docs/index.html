@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atlanta Airport Delay Analytics</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --bg: #f7f5f2;
+      --card: #fff;
+      --accent: #1d4ed8;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 16px/1.55 ui-sans-serif, system-ui, sans-serif;
+    }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 72px; }
+    h1 { font-size: 1.7rem; letter-spacing: -0.02em; margin: 0 0 8px; }
+    h2 { font-size: 1.15rem; margin: 28px 0 8px; }
+    p, li { color: var(--muted); }
+    code { font-size: 0.9em; }
+    a { color: var(--accent); }
+    .note {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: var(--warn);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.94rem;
+    }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 18px; }
+    .tabs button {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .panel { display: none; }
+    .panel.on { display: block; }
+    .chart {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 8px 4px;
+      margin: 16px 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    th { cursor: pointer; user-select: none; background: #fafaf9; }
+    th:hover { color: var(--accent); }
+    img.report {
+      width: 100%;
+      max-width: 720px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      margin: 8px 0 20px;
+    }
+    .err { color: #b91c1c; }
+    .legend { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Atlanta Airport Delay Analytics</h1>
+    <p>Hover and zoom the charts. This page reads the January 2015 sample outputs already in the repo. It is not a new study.</p>
+    <p class="note">Original Cornell Study results and Current Python Reimplementation results are on separate tabs. Do not mix them.</p>
+
+    <div class="tabs">
+      <button class="on" data-tab="demo">Current Python Reimplementation</button>
+      <button data-tab="orig">Original Cornell Study</button>
+    </div>
+
+    <section id="demo" class="panel on">
+      <p>January 2015 sample, real BTS ATL flights from <code>data/sample/atl_flights_sample.csv</code>. These numbers are not the year-long study results.</p>
+      <p id="summaryLine">Loading sample outputs...</p>
+      <p class="legend">Bar color is the original airline grouping: Major (AA, DL, UA), Medium (AS, F9, NK, US, WN), Regional (EV, MQ, OO).</p>
+      <div class="chart" id="meanChart"></div>
+      <div class="chart" id="rateChart"></div>
+      <div class="chart" id="causeChart"></div>
+      <div class="chart" id="typeChart"></div>
+      <h2>Arrival delay by airline</h2>
+      <p>Click a column header to sort. Means are in minutes. The 15-minute FAA line is on the first chart.</p>
+      <table id="airTable"></table>
+    </section>
+
+    <section id="orig" class="panel">
+      <p>From the 2015 full-year ATL report (about 350,000 flights). Not from the 3,000-flight sample above.</p>
+      <ul>
+        <li>Mean departure delay was higher than mean arrival delay.</li>
+        <li>After blocking month, airline type still mattered. Regional carriers had higher and more spread-out delays.</li>
+        <li>Distance was not treated as an important arrival-delay factor.</li>
+        <li>The paper's wage illustration on cities over 15 minutes was about $19.8 million using $22/hour and 123 passengers per flight.</li>
+      </ul>
+      <p>Delay types and the 15-minute rule from the Cornell report:</p>
+      <img class="report" src="original_delay_types.png" alt="Delay types and the 15-minute rule from the Cornell report" />
+    </section>
+
+    <p><a href="https://github.com/AjmalSirajudeen/atlanta-airport-delay-analytics">Back to the repository</a></p>
+  </main>
+  <script src="data.js"></script>
+  <script>
+    const TYPE = {
+      AA: "Major", DL: "Major", UA: "Major",
+      AS: "Medium", F9: "Medium", NK: "Medium", US: "Medium", WN: "Medium",
+      EV: "Regional", MQ: "Regional", OO: "Regional"
+    };
+    const TYPE_COLOR = { Major: "#1d4ed8", Medium: "#0f766e", Regional: "#b45309" };
+
+    function renderTable(rows, key, dir) {
+      const sorted = [...rows].sort((a, b) => {
+        const av = a[key], bv = b[key];
+        if (typeof av === "number") return (av - bv) * dir;
+        return String(av).localeCompare(String(bv)) * dir;
+      });
+      document.getElementById("airTable").innerHTML =
+        "<thead><tr><th data-k='airline'>Airline</th><th data-k='type'>Type</th><th data-k='mean'>Mean arr delay</th><th data-k='median'>Median</th><th data-k='rate'>15+ min rate</th><th data-k='count'>Flights</th></tr></thead><tbody>" +
+        sorted.map((r) =>
+          `<tr><td>${r.airline}</td><td>${r.type}</td><td>${r.mean.toFixed(2)}</td><td>${r.median.toFixed(1)}</td><td>${r.rate.toFixed(1)}%</td><td>${r.count}</td></tr>`
+        ).join("") + "</tbody>";
+    }
+
+    function barLayout(title, xTitle, height) {
+      return {
+        title,
+        xaxis: { title: xTitle },
+        margin: { l: 56, r: 20, t: 48, b: 56 },
+        height: height || 380,
+        paper_bgcolor: "#fff",
+        plot_bgcolor: "#fff"
+      };
+    }
+
+    async function main() {
+      try {
+        const summary = window.REPORT.summary;
+        const airlines = window.REPORT.airlines.map((r) => Object.assign({}, r, {
+          type: TYPE[r.airline] || "Other"
+        }));
+        const causes = window.REPORT.causes;
+
+        document.getElementById("summaryLine").textContent =
+          summary.n_operated_flights.toLocaleString() + " operated flights. Mean departure delay " +
+          summary.mean_dep_delay.toFixed(2) + " minutes; mean arrival delay " +
+          summary.mean_arr_delay.toFixed(2) + " minutes. " +
+          summary.pct_arr_delayed_15.toFixed(1) +
+          "% of arrivals were 15 or more minutes late. Sample wage illustration about $" +
+          Math.round(summary.cost_illustration.wage_loss_usd / 1000) + "k.";
+
+        const colors = airlines.map((r) => TYPE_COLOR[r.type]);
+        Plotly.newPlot("meanChart", [{
+          type: "bar",
+          x: airlines.map((r) => r.airline),
+          y: airlines.map((r) => r.mean),
+          customdata: airlines.map((r) => [r.type, r.count]),
+          marker: { color: colors },
+          hovertemplate: "%{x} (%{customdata[0]})<br>mean = %{y:.2f} min<br>n = %{customdata[1]}<extra></extra>"
+        }], Object.assign(barLayout("Mean arrival delay by airline (January 2015 sample)", "Minutes"), {
+          shapes: [{ type: "line", x0: -0.5, x1: airlines.length - 0.5, y0: 15, y1: 15, line: { color: "#b91c1c", dash: "dot" } }],
+          annotations: [{ x: airlines.length - 1, y: 15, text: "FAA 15 min", showarrow: false, yshift: 12, font: { color: "#b91c1c", size: 12 } }]
+        }), { responsive: true, displaylogo: false });
+
+        Plotly.newPlot("rateChart", [{
+          type: "bar",
+          x: airlines.map((r) => r.airline),
+          y: airlines.map((r) => r.rate),
+          customdata: airlines.map((r) => [r.type, r.count]),
+          marker: { color: colors },
+          hovertemplate: "%{x} (%{customdata[0]})<br>15+ min rate = %{y:.1f}%<br>n = %{customdata[1]}<extra></extra>"
+        }], barLayout("Share of arrivals 15+ minutes late", "Percent"), { responsive: true, displaylogo: false });
+
+        Plotly.newPlot("causeChart", [{
+          type: "bar",
+          x: causes.map((r) => r.cause.replace("Delay", "")),
+          y: causes.map((r) => r.minutes),
+          marker: { color: causes.map((r) => r.klass === "airline-controllable" ? "#1d4ed8" : "#a8a29e") },
+          customdata: causes.map((r) => r.klass),
+          hovertemplate: "%{x}<br>%{y:,.0f} minutes<br>%{customdata}<extra></extra>"
+        }], barLayout("Delay-cause minutes in the sample", "Minutes"), { responsive: true, displaylogo: false });
+
+        const arrAnova = summary.anova.find((a) => a.factor === "airline_type" && a.value === "ArrDelay");
+        const groups = Object.keys(arrAnova.group_means);
+        Plotly.newPlot("typeChart", [{
+          type: "bar",
+          x: groups,
+          y: groups.map((g) => arrAnova.group_means[g]),
+          marker: { color: groups.map((g) => TYPE_COLOR[g]) },
+          hovertemplate: "%{x}<br>mean arrival delay = %{y:.2f} min<extra></extra>"
+        }], Object.assign(barLayout("Mean arrival delay by airline type", "Minutes", 320), {
+          title: "Mean arrival delay by airline type (p < 0.001 on this sample)"
+        }), { responsive: true, displaylogo: false });
+
+        let sortKey = "mean";
+        let sortDir = -1;
+        renderTable(airlines, sortKey, sortDir);
+        document.getElementById("airTable").addEventListener("click", (e) => {
+          const th = e.target.closest("th");
+          if (!th) return;
+          const next = th.dataset.k;
+          sortDir = next === sortKey ? -sortDir : 1;
+          sortKey = next;
+          renderTable(airlines, sortKey, sortDir);
+        });
+      } catch (err) {
+        document.getElementById("summaryLine").className = "err";
+        document.getElementById("summaryLine").textContent =
+          "Could not load the sample outputs bundled with this page.";
+      }
+    }
+
+    document.querySelectorAll(".tabs button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("on"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("on"));
+        btn.classList.add("on");
+        document.getElementById(btn.dataset.tab).classList.add("on");
+        if (btn.dataset.tab === "demo") {
+          ["meanChart", "rateChart", "causeChart", "typeChart"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el && el.data) Plotly.Plots.resize(el);
+          });
+        }
+      });
+    });
+
+    main();
+  </script>
+</body>
+</html>

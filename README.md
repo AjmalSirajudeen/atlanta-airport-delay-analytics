@@ -1,5 +1,7 @@
 # Atlanta Airport Delay Analytics
 
+**Interactive report:** [open the charts](https://ajmalsirajudeen.github.io/atlanta-airport-delay-analytics/)
+
 This repository is a modern Python reimplementation of an operations analytics project originally completed during my graduate studies at Cornell University.
 
 The original Six Sigma / DMAIC study looked at Hartsfield-Jackson Atlanta International Airport (ATL) using about 350,000 Bureau of Transportation Statistics flights from 2015. We asked which delay drivers were airline-controllable, which were seasonal or city-specific, and what that implied for operations.
